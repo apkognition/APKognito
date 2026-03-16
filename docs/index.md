@@ -3,6 +3,13 @@ title: Home
 description: Welcome to APKognito!
 ---
 
+!!! warning "APKognito End of Support"
+    APKognito is no longer being maintained. **v2.2.1** will likely be the final version. The apkognito.win domain will expire **May 3rd**. I will not renew it, and the repo will become inaccessible shortly after. I suppose that will be the official "Death Day" of the APKognito project.
+
+    The current state of the repo is non-functional from my piss-poor attempt at simplifying the renaming startup chain. So... good luck to anyone who want's to fix that.
+
+    ***Thank you*** to ***everyone*** who helped along the way.
+
 <p align="center">
   <img alt="APKognito Logo" src="images/dark-wide.webp#only-dark" width="500" />
   <img alt="APKognito Logo" src="images/light-wide.webp#only-light" width="500" />
