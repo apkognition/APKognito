@@ -1,0 +1,1017 @@
+﻿<Page
+    x:Class="APKognito.Views.Pages.RenameConfigurationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:apklib="clr-namespace:APKognito.ApkLib.Configuration;assembly=APKognito.ApkLib"
+    xmlns:apkmod="clr-namespace:APKognito.ApkMod"
+    xmlns:ctrls="clr-namespace:APKognito.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="clr-namespace:APKognito.Helpers"
+    xmlns:javatools="clr-namespace:APKognito.Utilities.JavaTools"
+    xmlns:local="clr-namespace:APKognito.Views.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    x:Name="this"
+    Title="AdvancedRenameConfigurationPage"
+    d:DataContext="{d:DesignInstance local:RenameConfigurationPage,
+                                     IsDesignTimeCreatable=True}"
+    d:DesignHeight="3500"
+    d:DesignWidth="800"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <GridLength x:Key="ValueControlWidth">320</GridLength>
+        <helpers:EnumValueConverter x:Key="EnumValueConverter" />
+    </Page.Resources>
+
+    <StackPanel Margin="0,10,0,30">
+        <Grid Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+
+            <ui:TextBlock
+                Margin="0,16,16,16"
+                FontSize="24"
+                FontWeight="SemiBold"
+                Text="Package Renaming Settings" />
+
+            <Separator Grid.Column="1" Margin="0,5" />
+
+            <Menu
+                Grid.Column="2"
+                Height="50"
+                VerticalAlignment="Center">
+
+                <ui:MenuItem
+                    Command="{Binding ViewModel.SaveConfigurationCommand}"
+                    Header="Save"
+                    Icon="{ui:SymbolIcon Symbol=Save24}" />
+            </Menu>
+        </Grid>
+
+        <ui:TextBlock
+            Margin="0,16,0,0"
+            FontSize="20"
+            FontWeight="Medium"
+            Text="Java Path" />
+
+        <ui:Card Margin="0,8,0,0">
+            <Grid HorizontalAlignment="Stretch">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="{StaticResource ValueControlWidth}" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="Bold"
+                        Text="Java Version" />
+
+                    <ui:TextBlock Grid.Row="1" Text="Which Java version you'd like to use." />
+                </Grid>
+
+                <ComboBox
+                    Grid.Column="1"
+                    ItemsSource="{Binding ViewModel.FoundJavaVersions, Mode=OneTime}"
+                    SelectedItem="{Binding ViewModel.SelectedJavaVersion, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="javatools:JavaVersionInformation">
+                            <TextBlock Text="{Binding Path=.}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+        </ui:Card>
+
+        <ui:TextBlock
+            Margin="0,16,0,0"
+            FontSize="20"
+            FontWeight="Medium"
+            Text="Rename Type" />
+
+        <ui:Card Margin="0,8,0,0">
+            <StackPanel>
+                <Grid HorizontalAlignment="Stretch">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="{StaticResource ValueControlWidth}" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="Bold"
+                            Text="Rename Type" />
+
+                        <ui:TextBlock
+                            Grid.Row="1"
+                            Margin="0,0,15,0"
+                            TextWrapping="WrapWithOverflow">
+                            <Run FontWeight="Bold" Text="Classic:" />
+                            <Run Text="Replaces all instances of the package company name identifier. Takes longer and less customizable, but has a high success rate." />
+                            <LineBreak />
+                            <Run FontWeight="Bold" Text="Bootstrap:" />
+                            <Run Text="Injects a bootstrapper activity. Extremely fast and allows fully custom package names, but works for fewer packages." />
+                        </ui:TextBlock>
+                    </Grid>
+
+                    <ComboBox
+                        x:Name="RenameTypeSelector"
+                        Grid.Column="1"
+                        ItemsSource="{helpers:EnumCollection EnumType=apkmod:RenameType}"
+                        SelectedItem="{Binding ViewModel.PackageRenameType}" />
+                </Grid>
+
+                <Separator Margin="0,5" />
+
+                <Grid
+                    Grid.Row="2"
+                    Margin="16,0"
+                    IsEnabled="{Binding ViewModel.ShowBootstrapperOptions}">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RenameType}" />
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBlock FontWeight="Bold" Text="Enable bootstrapper crash reporting" />
+
+                        <ui:TextBlock
+                            Grid.Row="1"
+                            Text="Creates a window with error details when a bootstrap fails."
+                            TextWrapping="WrapWithOverflow" />
+                    </Grid>
+
+
+                    <ui:ToggleSwitch
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        IsChecked="{Binding ViewModel.EnableBootstrapErrorReporting}"
+                        OffContent="Disabled"
+                        OnContent="Enabled" />
+                </Grid>
+
+                <Separator Margin="0,5" />
+
+                <Grid
+                    Grid.Row="3"
+                    Margin="16,0"
+                    IsEnabled="{Binding ViewModel.ShowBootstrapperOptions}">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RenameType}" />
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBlock FontWeight="Bold" Text="Bootstrapper package name" />
+
+                        <ui:TextBlock Grid.Row="1" TextWrapping="WrapWithOverflow">
+                            <Run Text="The package name for the bootstrapper. This must contain at least one dot." />
+                            <LineBreak />
+                            <Run Text="Use the tag" />
+                            <InlineUIContainer>
+                                <ui:Card Margin="0,0,0,-6" Padding="3,0">
+                                    <ui:TextBlock
+                                        Foreground="Violet"
+                                        Text="{}{appname}"
+                                        TextWrapping="WrapWithOverflow" />
+                                </ui:Card>
+                            </InlineUIContainer>
+                            <Run Text="to inject the application name identifier. This can prevent unintentional overwriting." />
+                        </ui:TextBlock>
+                    </Grid>
+
+                    <Grid
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        IsEnabled="{Binding ViewModel.ShowBootstrapperOptions}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ui:TextBox
+                            Grid.Column="0"
+                            MinWidth="300"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            FontFamily="{StaticResource FiraRegular}"
+                            FontSize="12"
+                            Text="{Binding ViewModel.NewBootstrapPackageName}" />
+
+                        <ui:Button
+                            Grid.Column="1"
+                            VerticalAlignment="Stretch"
+                            Command="{Binding ViewModel.ResetFieldCommand}"
+                            CommandParameter="regex"
+                            Icon="{ui:SymbolIcon Symbol=ArrowCounterclockwise48}"
+                            ToolTip="Reset"
+                            Visibility="Collapsed" />
+                    </Grid>
+
+                    <ui:InfoBar
+                        Title="Caution!"
+                        Grid.Row="3"
+                        Grid.ColumnSpan="2"
+                        Margin="0,7.5,0,0"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Message="Make sure this name doesn't match a package already on your system or you may overwrite saved information."
+                        Severity="Error" />
+                </Grid>
+            </StackPanel>
+        </ui:Card>
+
+        <ui:TextBlock
+            Margin="0,16,0,0"
+            FontSize="20"
+            FontWeight="Medium"
+            Text="Output Settings" />
+
+        <ui:Card Margin="0,8,0,0" Padding="16">
+            <ui:Card.Resources>
+                <Style BasedOn="{StaticResource {x:Type ui:Card}}" TargetType="ui:Card">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=this, Path=ViewModel.AdbConfigured}" Value="False">
+                            <Setter Property="IsEnabled" Value="False" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ui:Card.Resources>
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{StaticResource ValueControlWidth}" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBlock FontWeight="Bold" Text="Output Directory" />
+
+                        <ui:TextBlock
+                            Grid.Row="1"
+                            Text="Will be used as the base path for output files."
+                            TextWrapping="WrapWithOverflow" />
+                    </Grid>
+
+                    <ctrls:DirectorySelector
+                        Grid.Column="1"
+                        DirectoryPath="{Binding ViewModel.OutputDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        IsEnabled="{Binding ViewModel.SharedViewModel.ConfigurationControlsEnabled, Mode=OneWay}" />
+                </Grid>
+
+                <Separator Margin="-8,7.5" />
+
+                <Grid IsEnabled="{Binding ViewModel.HideNonBootstrapperOptions}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="{StaticResource ValueControlWidth}" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="Bold"
+                            Text="New Package Name" />
+
+                        <ui:TextBlock
+                            Grid.Row="1"
+                            Text="The name to replace the package company name with."
+                            TextWrapping="WrapWithOverflow" />
+                    </Grid>
+
+                    <Grid
+                        Grid.Column="1"
+                        Grid.ColumnSpan="2"
+                        VerticalAlignment="Top"
+                        IsEnabled="{Binding ViewModel.SharedViewModel.ConfigurationControlsEnabled, Mode=OneWay}">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="auto" />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBox
+                            x:Name="PackageNameBox"
+                            Grid.ColumnSpan="2"
+                            KeyUp="TextBox_KeyUp"
+                            PlaceholderText="Replacement name. (e.g.: apkognito)"
+                            Text="{Binding ViewModel.ApkReplacementName, Mode=TwoWay, ValidatesOnDataErrors=True}" />
+
+                        <ui:TextBlock Grid.Row="1" Foreground="Red">
+                            <ui:TextBlock.Style>
+                                <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="ui:TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=PackageNameBox, Path=(Validation.HasError)}" Value="True">
+                                            <Setter Property="Text" Value="{Binding ElementName=PackageNameBox, Path=(Validation.Errors)[0].ErrorContent}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:TextBlock.Style>
+                        </ui:TextBlock>
+                    </Grid>
+                </Grid>
+
+                <Separator Margin="-8,7.5" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBlock FontWeight="Bold" Text="Copy Asset Files" />
+
+                        <ui:TextBlock
+                            Grid.Row="1"
+                            Text="Copy APK and OBB files when renaming rather than moving them.&#x0d;&#x0d;Copying takes double the storage space as moving them, but removes the risk of data loss if an error occurs while renaming."
+                            TextWrapping="WrapWithOverflow" />
+                    </Grid>
+
+                    <ui:ToggleSwitch
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        Checked="CheckBox_CheckedAsync"
+                        IsChecked="{Binding ViewModel.CopyWhenRenaming}"
+                        IsEnabled="{Binding ViewModel.SharedViewModel.ConfigurationControlsEnabled, Mode=OneWay}"
+                        OffContent="Move Files"
+                        OnContent="Copy Files"
+                        Unchecked="CheckBox_CheckedAsync" />
+                </Grid>
+
+                <Separator Margin="-8,7.5" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBlock FontWeight="Bold" Text="Push After Rename" />
+
+                        <ui:TextBlock
+                            Grid.Row="1"
+                            Text="Each APK and its assets will be pushed to a device once renamed. You can select which device to upload to in the 'ADB Configuration' page."
+                            TextWrapping="WrapWithOverflow" />
+                    </Grid>
+
+                    <ui:ToggleSwitch
+                        Grid.RowSpan="2"
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        Checked="CheckBox_CheckedAsync"
+                        IsChecked="{Binding ViewModel.PushAfterRename}"
+                        IsEnabled="{Binding ViewModel.SharedViewModel.ConfigurationControlsEnabled, Mode=OneWay}"
+                        OffContent="Don't Push"
+                        OnContent="Push After"
+                        Unchecked="CheckBox_CheckedAsync" />
+
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        VerticalAlignment="Bottom"
+                        Foreground="Red">
+                        <ui:TextBlock.Style>
+                            <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="ui:TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=this, Path=ViewModel.AdbConfigured}" Value="False">
+                                        <Setter Property="Text" Value="This option is not available while platform tools are not configured." />
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:TextBlock.Style>
+                    </ui:TextBlock>
+                </Grid>
+            </StackPanel>
+
+        </ui:Card>
+
+        <!--  Advanced Configurations  -->
+
+        <Grid Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+
+            <ui:TextBlock
+                Margin="0,16,16,16"
+                FontSize="24"
+                FontWeight="SemiBold"
+                Text="Advanced Renaming Settings" />
+
+            <Separator Grid.Column="1" Margin="0,5" />
+
+            <Menu
+                Grid.Column="2"
+                Height="50"
+                VerticalAlignment="Center">
+
+                <ui:MenuItem
+                    Command="{Binding ViewModel.SaveConfigurationCommand}"
+                    Header="Save"
+                    Icon="{ui:SymbolIcon Symbol=Save24}" />
+            </Menu>
+        </Grid>
+
+        <ui:TextBlock
+            Margin="0,16,0,0"
+            FontSize="20"
+            FontWeight="Medium"
+            Text="Regex" />
+
+        <StackPanel Margin="0,16,0,0">
+
+            <ui:CardControl Padding="16" Icon="{ui:SymbolIcon Symbol=TextWholeWord20}">
+                <ui:CardControl.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="File regex pattern" />
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <ui:TextBlock
+                                Grid.Column="0"
+                                Margin="0,0,2,0"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="Use"
+                                TextWrapping="WrapWithOverflow" />
+                            <ui:Card Grid.Column="1" Padding="3,0">
+                                <ui:TextBlock
+                                    Foreground="Violet"
+                                    Text="{}{value}"
+                                    TextWrapping="WrapWithOverflow" />
+                            </ui:Card>
+                            <ui:TextBlock
+                                Grid.Column="2"
+                                Margin="2,0,0,0"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="for the company name replacement."
+                                TextWrapping="WrapWithOverflow" />
+                        </Grid>
+                    </Grid>
+                </ui:CardControl.Header>
+
+                <Grid IsEnabled="{Binding ViewModel.HideNonBootstrapperOptions}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBox
+                        Grid.Column="0"
+                        MinWidth="300"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        FontFamily="{StaticResource FiraRegular}"
+                        FontSize="12"
+                        Text="{Binding ViewModel.PackageReplaceRegexString}" />
+
+                    <ui:Button
+                        Grid.Column="1"
+                        Margin="5,5,0,5"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding ViewModel.ResetFieldCommand}"
+                        CommandParameter="regex"
+                        Icon="{ui:SymbolIcon Symbol=ArrowCounterclockwise48}"
+                        ToolTip="Reset" />
+                </Grid>
+            </ui:CardControl>
+        </StackPanel>
+
+        <ui:TextBlock
+            Margin="0,20,0,0"
+            FontSize="20"
+            FontWeight="Medium"
+            Text="Rename Options" />
+
+        <ui:Card Margin="0,16,0,0" Padding="16">
+            <StackPanel>
+                <Grid IsEnabled="{Binding ViewModel.HideNonBootstrapperOptions}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock FontWeight="Bold" Text="Rename Libraries" />
+                    <ui:ToggleSwitch
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding ViewModel.RenameLibs}"
+                        OffContent="No Rename"
+                        OnContent="Rename" />
+
+                    <ui:TextBlock Grid.Row="1" Text="Rename library filenames." />
+                </Grid>
+
+                <Separator Margin="-8,7.5" />
+
+                <Grid IsEnabled="{Binding ViewModel.HideNonBootstrapperOptions}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock FontWeight="Bold" Text="Rename Libraries Internally" />
+                    <ui:ToggleSwitch
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding ViewModel.RenameLibsInternal}"
+                        OffContent="No Rename"
+                        OnContent="Rename" />
+
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Margin="0,5,0,0"
+                        TextWrapping="WrapWithOverflow">
+                        <Run Text="Rename all JNI native method names in libraries.&#x0d;&#x0d;" /><Run
+                            FontStyle="Italic"
+                            FontWeight="Medium"
+                            Text="Replacement company names must be the same length as the original company name when this option is enabled." />
+                    </ui:TextBlock>
+                </Grid>
+
+                <Separator Margin="-8,7.5" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock FontWeight="Bold" Text="Rename OBB Files Internally" />
+                    <ui:ToggleSwitch
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding ViewModel.RenameObbsInternal}"
+                        OffContent="No Rename"
+                        OnContent="Rename" />
+
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBlock Text="Run the rename regex on OBB archive entries. Only works on OBB files that are valid compressed archives. Non archive files will be ignored." TextWrapping="WrapWithOverflow" />
+                        <ui:TextBlock
+                            Grid.Row="1"
+                            Margin="0,5,0,0"
+                            Text="This option is required for the 'Extra OBB Rename Paths' setting." />
+                    </Grid>
+                </Grid>
+            </StackPanel>
+        </ui:Card>
+
+        <ui:TextBlock
+            Margin="0,20,0,0"
+            FontSize="20"
+            FontWeight="Medium"
+            Text="OBB Renaming" />
+
+        <StackPanel Margin="0,16,0,0">
+            <ui:Card
+                Margin="0,5"
+                Padding="16"
+                IsEnabled="{Binding ViewModel.RenameObbsInternal}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel>
+                        <ui:TextBlock
+                            IsEnabled="{Binding ViewModel.RenameObbsInternal}"
+                            Text="Extra OBB Rename Paths"
+                            TextWrapping="WrapWithOverflow" />
+                        <ui:TextBlock
+                            Margin="0,0,10,0"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="Extra paths of internal OBB files to rename (catalog will always be renamed)."
+                            TextWrapping="WrapWithOverflow" />
+                    </StackPanel>
+
+                    <ui:TextBox
+                        Grid.Column="1"
+                        Height="100"
+                        AcceptsReturn="True"
+                        Text="{Binding ViewModel.RenameObbsInternalExtras}" />
+
+                    <ui:Button
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="0,10,0,0"
+                        HorizontalAlignment="Right"
+                        Command="{Binding ViewModel.ApplyRenameObbsInternalExtrasCommand}"
+                        CommandParameter=""
+                        Content="Apply"
+                        Icon="{ui:SymbolIcon Symbol=Save24}" />
+                </Grid>
+            </ui:Card>
+
+            <ui:TextBlock
+                Margin="0,20,0,0"
+                FontSize="20"
+                FontWeight="Medium"
+                Text="Extra Package Files" />
+
+            <ui:Card Margin="0,16,0,0">
+                <Grid IsEnabled="{Binding ViewModel.HideNonBootstrapperOptions}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <Menu>
+                        <ui:MenuItem
+                            Command="{Binding ViewModel.AddExtraPathCardCommand}"
+                            Header="Add Path"
+                            Icon="{ui:SymbolIcon Symbol=Add24}" />
+
+                        <Separator />
+
+                        <ui:MenuItem
+                            Command="{Binding ViewModel.ApplyExtraPathChangesCommand}"
+                            Header="Apply"
+                            Icon="{ui:SymbolIcon Symbol=Save24}" />
+                    </Menu>
+
+                    <ItemsControl
+                        Grid.Row="1"
+                        Margin="0,7.5,0,0"
+                        d:ItemsSource="{d:SampleData ItemCount=3}"
+                        ItemsSource="{Binding ViewModel.ExtraPackageItems}"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ui:Card Margin="7.5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="130" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <ComboBox
+                                            Grid.Column="0"
+                                            Margin="0,0,7.5,0"
+                                            ItemsSource="{helpers:EnumCollection EnumType=apklib:FileType}"
+                                            SelectedItem="{Binding FileType}" />
+
+                                        <TextBox
+                                            Grid.Column="1"
+                                            Margin="0,0,7.5,0"
+                                            Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}" />
+
+                                        <ui:Button
+                                            Grid.Column="2"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Stretch"
+                                            Appearance="Danger"
+                                            Command="{Binding RelativeSource={RelativeSource AncestorType=ItemsControl}, Path=DataContext.ViewModel.DeleteExtraPathCardCommand}"
+                                            CommandParameter="{Binding}"
+                                            Content="Delete"
+                                            Icon="{ui:SymbolIcon Symbol=Delete24}" />
+                                    </Grid>
+                                </ui:Card>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </ui:Card>
+        </StackPanel>
+
+        <ui:TextBlock
+            Margin="0,20,0,0"
+            FontSize="20"
+            FontWeight="Medium"
+            Text="Java Options" />
+
+        <ui:Card Margin="0,8,0,0" Padding="16">
+            <Grid HorizontalAlignment="Stretch">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="{StaticResource ValueControlWidth}" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="Bold"
+                        Text="Java Executable Flags" />
+
+                    <ui:TextBlock Grid.Row="1" Text="The path to your Java executable." />
+                </Grid>
+
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBox
+                        Grid.Column="0"
+                        MinWidth="300"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        FontSize="12"
+                        Text="{Binding ViewModel.JavaFlags}" />
+
+                    <ui:Button
+                        Grid.Column="1"
+                        Margin="5,5,0,5"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding ViewModel.ResetFieldCommand}"
+                        CommandParameter="java_flags"
+                        Icon="{ui:SymbolIcon Symbol=ArrowCounterclockwise48}"
+                        ToolTip="Reset" />
+                </Grid>
+            </Grid>
+        </ui:Card>
+
+        <ui:TextBlock
+            Margin="0,20,0,0"
+            FontSize="20"
+            FontWeight="Medium"
+            Text="Auto Rename Config" />
+
+        <ui:Card Margin="0,16,0,0">
+            <Grid>
+                <ui:ToggleSwitch
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Panel.ZIndex="5"
+                    IsChecked="{Binding ViewModel.AutoPackageEnabled}"
+                    OffContent="Disabled"
+                    OnContent="Enabled" />
+
+                <StackPanel IsEnabled="{Binding ViewModel.AutoPackageEnabled}">
+                    <ui:TextBlock Margin="0,0,0,16" Text="Allows for altering what directories or files are renamed, or where they're placed in the package." />
+                    <ui:InfoBar
+                        Title="Caution!"
+                        Margin="0,0,0,16"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Message="This option can pose certain security risks. Only use this if you know what the script does and who created it!"
+                        Severity="Error" />
+
+                    <TextBox
+                        MinHeight="150"
+                        MaxHeight="750"
+                        AcceptsReturn="True"
+                        MaxLines="1000"
+                        Text="{Binding ViewModel.AutoPackageConfig, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="NoWrap"
+                        VerticalScrollBarVisibility="Visible" />
+                </StackPanel>
+            </Grid>
+        </ui:Card>
+
+        <ui:TextBlock
+            Margin="0,20,0,0"
+            FontSize="20"
+            FontWeight="Medium"
+            Text="Buffers" />
+
+        <ui:Card Margin="0,16,0,0" Padding="16">
+            <StackPanel IsEnabled="{Binding ViewModel.HideNonBootstrapperOptions}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock FontWeight="Bold" Text="Smali cutoff limit" />
+                    <ui:NumberBox
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        MinWidth="120"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Value="{Binding ViewModel.SmaliCutoffLimit}" />
+
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Text="The file size limit before a Smali file is streamed rather than fully loaded into memory, in KB."
+                        TextWrapping="WrapWithOverflow" />
+                </Grid>
+
+                <Separator Margin="-8,7.5" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock FontWeight="Bold" Text="Smali buffer size" />
+                    <ui:NumberBox
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        MinWidth="120"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Value="{Binding ViewModel.SmaliBufferSize}" />
+
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Margin="0,5,0,5"
+                        Text="The buffer size for all streamed Smali files, in KB."
+                        TextWrapping="WrapWithOverflow" />
+
+                    <ui:InfoBar
+                        Title="Note"
+                        Grid.Row="3"
+                        Grid.ColumnSpan="3"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Message="This only applies to files larger than the Smali cutoff limit." />
+                </Grid>
+
+                <Separator Margin="-8,7.5" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock FontWeight="Bold" Text="Scan file before rename" />
+                    <ui:ToggleSwitch
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        MinWidth="120"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding ViewModel.ScanFileBeforeRename}"
+                        OffContent="No scan"
+                        OnContent="Scan" />
+
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Margin="0,5,0,5"
+                        Text="Scans each Smali file for an instance of the original package name. If one is not found, the file is skipped."
+                        TextWrapping="WrapWithOverflow" />
+                </Grid>
+            </StackPanel>
+        </ui:Card>
+    </StackPanel>
+</Page>

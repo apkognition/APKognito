@@ -1,0 +1,148 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\apkognito.ico</ApplicationIcon>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PackageIcon>apkognito.png</PackageIcon>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <Platforms>AnyCPU;x64</Platforms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <StartupObject>APKognito.MainOverride</StartupObject>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Configurations>Debug;Release;ReleaseWSymbols</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
+    <Optimize>True</Optimize>
+    <ShouldCreateLogs>True</ShouldCreateLogs>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWSymbols|AnyCPU'">
+    <DebugType>full</DebugType>
+    <Optimize>True</Optimize>
+    <ShouldCreateLogs>True</ShouldCreateLogs>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DebugType>embedded</DebugType>
+    <Optimize>True</Optimize>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWSymbols|x64'">
+    <DebugType>full</DebugType>
+    <Optimize>True</Optimize>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+  </PropertyGroup>
+	
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>$(DefineConstants);DEBUG_ANY</DefineConstants>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\apkognito.ico" />
+    <None Remove="Assets\apkognito.png" />
+    <None Remove="Assets\dark-name.png" />
+    <None Remove="Assets\light-wide.png" />
+    <None Remove="Fonts\FiraCode-Medium.ttf" />
+    <None Remove="Fonts\FiraCode-Regular.ttf" />
+    <None Remove="Fonts\TechSans.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\apkognito.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\apkognito.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="DotNetZip.Original" Version="2025.2.15" />
+	  <PackageReference Include="ELFSharp" Version="2.17.3" />
+    <PackageReference Include="Humanizer.Core" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
+    <PackageReference Include="Samboy063.Tomlet" Version="6.2.0" />
+    <PackageReference Include="System.Management" Version="10.0.2" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Private.Uri" Version="4.3.2" />
+    <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <PackageReference Include="WPF-UI" Version="4.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="WPF-UI.Abstractions" Version="4.2.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Debug'">
+    <PackageReference Include="Spectre.Console" Version="0.54.0" />
+    <PackageReference Include="Spectre.Console.Json" Version="0.54.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\dark-name.png" />
+    <Resource Include="Assets\light-wide.png" />
+    <Resource Include="Fonts\FiraCode-Medium.ttf" />
+    <Resource Include="Fonts\TechSans.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Controls\Overrides\Theme.Dark.private.xml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Fonts\FiraCode-Bold.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Fonts\FiraCode-Light.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Fonts\FiraCode-Retina.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\APKognito.ApkLib\APKognito.ApkLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="AdbScripts.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AdbScripts.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="AdbScripts.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>AdbScripts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

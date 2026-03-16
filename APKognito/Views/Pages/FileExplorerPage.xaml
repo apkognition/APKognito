@@ -1,0 +1,210 @@
+﻿<Page
+    x:Class="APKognito.Views.Pages.FileExplorerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Wpf.Ui.Controls;assembly=Wpf.Ui"
+    xmlns:ctrls="clr-namespace:APKognito.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helper="clr-namespace:APKognito.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="clr-namespace:APKognito.Views.Pages"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:utils="clr-namespace:APKognito.Base.MVVM"
+    x:Name="This"
+    Title="FileExplorerPage"
+    Margin="-44,0"
+    d:DataContext="{d:DesignInstance pages:FileExplorerPage,
+                                     IsDesignTimeCreatable=True}"
+    d:DesignHeight="800"
+    d:DesignWidth="800"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    PreviewMouseUp="This_PreviewMouseUpAsync"
+    ScrollViewer.CanContentScroll="False"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <helper:BoolToVisibility x:Key="VisibilityInverter" />
+            <utils:BindingProxy x:Key="BindingProxy" Data="{Binding}" />
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Controls/Overrides/ListViewItem.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Page.InputBindings>
+        <KeyBinding
+            Key="Return"
+            Command="{Binding ViewModel.NavigateToDirectoryCommand}"
+            CommandParameter="{Binding SelectedItem, ElementName=AdbFolderPresenter}" />
+        <KeyBinding Key="Backspace" Command="{Binding ViewModel.NavigateBackwardsCommand}" />
+    </Page.InputBindings>
+
+    <Grid Margin="10">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+
+            <Menu Grid.Column="0">
+                <ui:MenuItem
+                    Command="{Binding ViewModel.NavigateBackwardsCommand}"
+                    Icon="{ui:SymbolIcon Symbol=ArrowLeft48}"
+                    ToolTip="Go back" />
+                <ui:MenuItem
+                    Command="{Binding ViewModel.NavigateForwardsCommand}"
+                    Icon="{ui:SymbolIcon Symbol=ArrowRight48}"
+                    ToolTip="Go forward" />
+                <ui:MenuItem
+                    Command="{Binding ViewModel.NavigateOutOfDirectoryCommand}"
+                    Icon="{ui:SymbolIcon Symbol=ArrowUp48}"
+                    ToolTip="Travel out of directory" />
+            </Menu>
+
+            <ui:TextBox
+                x:Name="PathInput"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Text="{Binding ViewModel.ItemPath}">
+                <ui:TextBox.InputBindings>
+                    <KeyBinding
+                        Key="Return"
+                        Command="{Binding ViewModel.ManualNavigateCommand}"
+                        CommandParameter="{Binding ElementName=PathInput, Path=Text}" />
+                </ui:TextBox.InputBindings>
+            </ui:TextBox>
+
+            <Menu Grid.Column="2">
+                <ui:MenuItem
+                    Command="{Binding ViewModel.TryRefreshDirectoryCommand}"
+                    Icon="{ui:SymbolIcon Symbol=ArrowSync24}"
+                    ToolTip="Refresh" />
+            </Menu>
+        </Grid>
+
+        <ui:TextBlock
+            Grid.Row="5"
+            Margin="0,50,0,0"
+            HorizontalAlignment="Center"
+            Text="This directory is empty."
+            Visibility="{Binding ViewModel.DirectoryEmpty, Converter={StaticResource VisibilityInverter}}" />
+
+        <ui:ListView
+            x:Name="AdbFolderPresenter"
+            Grid.Row="5"
+            AlternationCount="2"
+            BorderBrush="Transparent"
+            ItemsSource="{Binding ViewModel.AdbItems}"
+            ScrollViewer.CanContentScroll="True"
+            VirtualizingPanel.ScrollUnit="Pixel">
+
+            <ui:ListView.Resources>
+                <helper:AdbGBConverter x:Key="AdbGBConverter" />
+                <helper:BoolToVisibility x:Key="BoolToVisibility" />
+                <utils:BindingProxy x:Key="ListBindingProxy" Data="{Binding ElementName=AdbFolderPresenter}" />
+            </ui:ListView.Resources>
+
+            <ui:ListView.ItemContainerStyle>
+                <Style BasedOn="{StaticResource ListViewItemStyle}" TargetType="{x:Type ui:ListViewItem}">
+                    <EventSetter Event="MouseDoubleClick" Handler="ListViewItem_MouseDoubleClickAsync" />
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <ui:MenuItem
+                                    Command="{Binding Source={StaticResource BindingProxy}, Path=Data.ViewModel.PullItemsCommand}"
+                                    CommandParameter="{Binding Source={StaticResource ListBindingProxy}, Path=Data.SelectedItems}"
+                                    Header="Pull"
+                                    Icon="{ui:SymbolIcon Symbol=ArrowDownload24}" />
+                                <Separator />
+                                <ui:MenuItem Header="Delete" Icon="{ui:SymbolIcon Symbol=Delete24}" />
+                                <ui:MenuItem Header="Rename" Icon="{ui:SymbolIcon Symbol=Rename24}" />
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ui:ListView.ItemContainerStyle>
+
+            <ui:ListView.View>
+                <ui:GridView AllowsColumnReorder="True" ColumnHeaderToolTip="Directory Information">
+                    <ui:GridView.Columns>
+                        <ui:GridViewColumn Width="31">
+                            <ui:GridViewColumn.Header>
+                                <!--  Prevents column from being resized  -->
+                                <GridViewColumnHeader IsEnabled="False" />
+                            </ui:GridViewColumn.Header>
+
+                            <ui:GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ui:SymbolIcon FontSize="20" Symbol="{Binding Symbol}" />
+                                </DataTemplate>
+                            </ui:GridViewColumn.CellTemplate>
+                        </ui:GridViewColumn>
+
+                        <ui:GridViewColumn Width="200" Header="Name">
+                            <ui:GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:TextBlock
+                                            FontSize="13"
+                                            Text="{Binding FileName}"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ui:GridViewColumn.CellTemplate>
+                        </ui:GridViewColumn>
+
+                        <ui:GridViewColumn Width="170" Header="Date Modfied">
+                            <ui:GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ui:TextBlock
+                                        FontSize="13"
+                                        Text="{Binding CreationDate}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </ui:GridViewColumn.CellTemplate>
+                        </ui:GridViewColumn>
+
+                        <ui:GridViewColumn Width="100" Header="Size">
+                            <ui:GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ui:TextBlock
+                                        FontSize="13"
+                                        Text="{Binding ConverterPair, Converter={StaticResource AdbGBConverter}}"
+                                        TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </ui:GridViewColumn.CellTemplate>
+                        </ui:GridViewColumn>
+
+                        <ui:GridViewColumn Width="100" Header="User">
+                            <ui:GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon
+                                            Margin="0,0,5,0"
+                                            Filled="True"
+                                            FontSize="18"
+                                            Symbol="ShieldError24"
+                                            ToolTip="This item is owned by root and cannot be modified."
+                                            Visibility="{Binding OwnedByRoot, Converter={StaticResource BoolToVisibility}}" />
+                                        <ui:TextBlock Text="{Binding FileOwner}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ui:GridViewColumn.CellTemplate>
+                        </ui:GridViewColumn>
+                    </ui:GridView.Columns>
+                </ui:GridView>
+            </ui:ListView.View>
+        </ui:ListView>
+    </Grid>
+</Page>

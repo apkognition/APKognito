@@ -1,0 +1,49 @@
+﻿<ui:ContentDialog
+    x:Class="APKognito.Controls.Dialogs.LogpackCreatorDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:APKognito.Controls.Dialogs"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    x:Name="this"
+    Title="Logpack Creator"
+    d:DataContext="{d:DesignInstance local:LogpackCreatorDialog,
+                                     IsDesignTimeCreatable=True}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    CloseButtonText="Cancel"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    PrimaryButtonText="Create Logpack"
+    mc:Ignorable="d">
+
+    <ui:ContentDialog.Resources>
+        <Style BasedOn="{StaticResource {x:Type ui:ContentDialog}}" TargetType="{x:Type local:LogpackCreatorDialog}" />
+    </ui:ContentDialog.Resources>
+
+    <StackPanel Width="550">
+        <ui:TextBlock Margin="0,0,0,5" Text="Your logpack will contain logs, exceptions, and optionally crash information." />
+
+        <ui:CardControl
+            x:Name="PullLogsCard"
+            Margin="0,0,0,10"
+            Icon="{ui:SymbolIcon Symbol=ClipboardError24}">
+            <ui:CardControl.Header>
+                <ui:TextBlock ToolTip="Attach crash logs from the currently connected device. Ensure the right device is enabled and selected!">
+                    <Run Text="Include Package Crash Information" />
+                    <ui:SymbolIcon Symbol="QuestionCircle24" />
+                </ui:TextBlock>
+            </ui:CardControl.Header>
+
+            <ui:ToggleSwitch
+                x:Name="PullLogsToggle"
+                Grid.Column="1"
+                IsChecked="{Binding IncludeCrashLogs}"
+                IsEnabled="{Binding IsAdbEnabled, Mode=OneWay}"
+                OffContent="Excluded"
+                OnContent="Included" />
+        </ui:CardControl>
+    </StackPanel>
+</ui:ContentDialog>

@@ -1,0 +1,519 @@
+﻿<Page
+    x:Class="APKognito.Views.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="clr-namespace:APKognito.Helpers"
+    xmlns:local="clr-namespace:APKognito.Views.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:utils="clr-namespace:APKognito.Utilities"
+    Title="SettingsPage"
+    d:DataContext="{d:DesignInstance local:SettingsPage,
+                                     IsDesignTimeCreatable=True}"
+    d:DesignHeight="1000"
+    d:DesignWidth="800"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+            <helpers:EnumValueConverter x:Key="EnumValueConverter" />
+            <helpers:ThemeToIndexConverter x:Key="ThemeToIndexConverter" />
+
+            <StackPanel x:Key="UninstallContent">
+                <CheckBox x:Name="RemoveConfigurations" Content="Remove all configurations" />
+            </StackPanel>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <!--  Theme Card  -->
+
+    <StackPanel Margin="0,30">
+
+        <TextBlock FontWeight="Medium" Text="Personalization" />
+
+        <ui:CardExpander Margin="0,12,0,0" Icon="{ui:SymbolIcon Color24}">
+            <ui:CardExpander.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock
+                        Grid.Row="0"
+                        FontTypography="Body"
+                        Text="App theme" />
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Select which app theme to display" />
+
+                    <ComboBox
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        MinWidth="200"
+                        Margin="0,0,10,0"
+                        SelectedIndex="{Binding ViewModel.CurrentTheme, Converter={StaticResource ThemeToIndexConverter}, Mode=TwoWay}">
+                        <ComboBoxItem Content="Light" />
+                        <ComboBoxItem Content="Dark" />
+                        <ComboBoxItem Content="High Contrast" />
+                    </ComboBox>
+                </Grid>
+            </ui:CardExpander.Header>
+
+            <StackPanel>
+                <StackPanel.Resources>
+                    <Style TargetType="{x:Type Separator}">
+                        <Setter Property="Margin" Value="0,10" />
+                    </Style>
+                </StackPanel.Resources>
+
+                <!--
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock
+                        Grid.Row="0"
+                        FontTypography="Body"
+                        Text="App accent" />
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Enable Windows theme accents." />
+
+                    <ui:ToggleSwitch
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        MinWidth="200"
+                        Margin="0,0,10,0"
+                        IsChecked="{Binding ViewModel.UseAccent}"
+                        OffContent="Disabled"
+                        OnContent="Enabled" />
+                </Grid>
+
+                <Separator />
+                -->
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock
+                        Grid.Row="0"
+                        FontTypography="Body"
+                        Text="Window style" />
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Select which window style to use." />
+
+                    <ComboBox
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        MinWidth="200"
+                        Margin="0,0,10,0"
+                        ItemsSource="{helpers:EnumCollection EnumType=ui:WindowBackdropType}"
+                        SelectedItem="{Binding ViewModel.WindowStyle}" />
+                </Grid>
+
+            </StackPanel>
+
+        </ui:CardExpander>
+
+        <!--  Auto Update Card  -->
+
+        <ui:CardExpander
+            Margin="0,12,0,0"
+            ContentPadding="0"
+            Icon="{ui:SymbolIcon ClockArrowDownload24}">
+            <ui:CardExpander.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock Grid.Row="0" Text="Auto Update" />
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Select how APKognito handles updates"
+                        TextWrapping="WrapWithOverflow" />
+                </Grid>
+            </ui:CardExpander.Header>
+            <StackPanel>
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock Text="Auto Update" />
+
+                    <ui:ToggleSwitch
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        IsChecked="{Binding ViewModel.AutomaticUpdatesEnabled, Mode=TwoWay}"
+                        OffContent="Off"
+                        OnContent="On" />
+                </Grid>
+
+                <Separator />
+
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock VerticalAlignment="Center" Text="Minutes Between Update Checks" />
+
+                    <ui:NumberBox
+                        Grid.Column="1"
+                        Width="120"
+                        HorizontalAlignment="Right"
+                        Maximum="9999"
+                        Minimum="1"
+                        Value="{Binding ViewModel.UpdateDelay, Mode=TwoWay}" />
+                </Grid>
+
+                <Separator />
+
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock VerticalAlignment="Center" Text="Check For Updates" />
+
+                    <ui:Button
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Command="{Binding ViewModel.RunUpdateCheckCommand}"
+                        Content="Run Check" />
+                </Grid>
+                <Separator />
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock VerticalAlignment="Center" Text="Save Auto Update Settings" />
+
+                    <ui:Button
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        Command="{Binding ViewModel.SaveUpdatesSettingsCommand}"
+                        Content="Save Settings"
+                        ToolTip="Saves your update preferences." />
+                </Grid>
+            </StackPanel>
+        </ui:CardExpander>
+
+        <!--  Debugging Card  -->
+
+        <ui:CardExpander
+            Margin="0,12,0,0"
+            ContentPadding="0"
+            Icon="{ui:SymbolIcon Bug24}">
+            <ui:CardExpander.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock Grid.Row="0" Text="Debugging" />
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Special features used for debugging purposes [Includes logpack]"
+                        TextWrapping="WrapWithOverflow" />
+                </Grid>
+            </ui:CardExpander.Header>
+
+            <StackPanel>
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock VerticalAlignment="Center" Text="Create Logpack (Required for submitting GitHub issues)" />
+                    <ui:Button
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Command="{Binding ViewModel.CreateLogpackCommand}"
+                        Content="Create Logpack" />
+                </Grid>
+                <Separator />
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBlock Text="Open APKognito AppData Directory" />
+                        <ui:TextBlock
+                            Grid.Row="1"
+                            FontSize="12"
+                            Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{Binding ViewModel.AppDataPath, Mode=OneTime}" />
+                    </Grid>
+
+                    <ui:Button
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Command="{Binding ViewModel.OpenAppDataCommand}"
+                        Content="Open AppData" />
+                </Grid>
+                <Separator />
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock Text="Delete temporary files after rename" />
+
+                    <ui:ToggleSwitch
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        IsChecked="{Binding ViewModel.ClearTempFilesOnRename}"
+                        OffContent="No"
+                        OnContent="Yes" />
+                </Grid>
+                <Separator />
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock Text="Minimum log level" />
+
+                    <ComboBox
+                        Grid.Column="1"
+                        MinWidth="120"
+                        HorizontalAlignment="Right"
+                        ItemsSource="{helpers:EnumCollection EnumType=utils:LogLevel}"
+                        SelectedItem="{Binding ViewModel.MinimumLogLevel}" />
+                </Grid>
+                <Separator />
+                <Grid Margin="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBlock Text="Log exceptions to view" />
+
+                    <ui:ToggleSwitch
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        IsChecked="{Binding ViewModel.LogExceptionsToView}"
+                        OffContent="No log"
+                        OnContent="Log" />
+                </Grid>
+                <Separator />
+                <ui:CardAction
+                    Margin="16"
+                    Command="{Binding ViewModel.NavigateToLogViewerCommand}"
+                    Content="Open LogViewer Page"
+                    Icon="{ui:SymbolIcon Symbol=ContentViewGallery28}" />
+                <Separator />
+                <ui:CardAction
+                    Margin="16"
+                    Command="{Binding ViewModel.StartDebugConsoleCommand}"
+                    Content="Open Debug Console (Readonly)"
+                    Icon="{ui:SymbolIcon Symbol=WindowConsole20}" />
+            </StackPanel>
+        </ui:CardExpander>
+
+        <!--  About Card  -->
+
+        <TextBlock
+            Margin="0,24,0,0"
+            FontWeight="Medium"
+            Text="About" />
+
+        <ui:CardExpander Margin="0,12,0,0" ContentPadding="0">
+            <ui:CardExpander.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:Image
+                        Grid.RowSpan="2"
+                        Width="25"
+                        Height="25"
+                        Margin="0,0,15,0"
+                        RenderOptions.BitmapScalingMode="HighQuality"
+                        Source="pack://application:,,,/Assets/apkognito.png" />
+                    <ui:TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Bottom"
+                        Text="APKognito" />
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                        <Run Text="© 2024 APKognition" />
+                        <Run Text="{Binding ViewModel.AppVersion, Mode=OneWay}" />
+                    </ui:TextBlock>
+
+                    <ui:TextBlock
+                        Grid.RowSpan="2"
+                        Grid.Column="3"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" />
+                </Grid>
+            </ui:CardExpander.Header>
+            <TextBlock Margin="16" Text="{Binding ViewModel.FullAppVersion, Mode=OneWay}" />
+        </ui:CardExpander>
+
+        <ui:CardControl Margin="0,12,0,0" Icon="{ui:SymbolIcon Symbol=UninstallApp24}">
+            <ui:CardControl.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ui:TextBlock Grid.Row="0" Text="Uninstall APKognito" />
+                    <ui:TextBlock
+                        Grid.Row="1"
+                        Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Uninstalls APKognito and optionally configurations."
+                        TextWrapping="WrapWithOverflow" />
+                </Grid>
+            </ui:CardControl.Header>
+
+            <ui:Button
+                Appearance="Danger"
+                Command="{Binding ViewModel.UninstallAppCommandCommand}"
+                CommandParameter="{StaticResource UninstallContent}"
+                Content="Uninstall"
+                Foreground="White" />
+        </ui:CardControl>
+
+        <Separator Margin="0,10" />
+
+        <ui:Card>
+            <StackPanel>
+                <Grid Margin="0,0,0,24" HorizontalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:Image
+                        Grid.RowSpan="2"
+                        Width="72"
+                        Height="72"
+                        RenderOptions.BitmapScalingMode="HighQuality"
+                        Source="pack://application:,,,/Assets/apkognito.png" />
+
+                    <StackPanel
+                        Grid.Column="1"
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                Margin="0,0,4,0"
+                                FontSize="24"
+                                FontWeight="Medium"
+                                Text="APKognito" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Margin="4,0,0,2"
+                                VerticalAlignment="Bottom"
+                                FontSize="16"
+                                FontWeight="Medium"
+                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                Text="{Binding ViewModel.AppVersion}" />
+                        </Grid>
+                        <TextBlock Foreground="{DynamicResource TextFillColorTertiaryBrush}" Text="Rename Android Package Kits with ease." />
+                    </StackPanel>
+                </Grid>
+
+                <WrapPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <ui:Anchor
+                        Margin="0,0,8,8"
+                        Appearance="Info"
+                        Content="GitHub repository"
+                        Icon="{ui:SymbolIcon Symbol=Code24}"
+                        NavigateUri="https://github.com/apkognition/APKognito" />
+                    <ui:Anchor
+                        Margin="0,0,8,8"
+                        Appearance="Caution"
+                        Content="APKognito Docs"
+                        Foreground="white"
+                        Icon="{ui:SymbolIcon Symbol=BookQuestionMark24}"
+                        NavigateUri="https://apkognito.win" />
+                    <ui:Anchor
+                        Margin="0,0,8,8"
+                        Appearance="Danger"
+                        Content="Report an issue"
+                        Foreground="white"
+                        Icon="{ui:SymbolIcon Symbol=BookExclamationMark24}"
+                        NavigateUri="https://github.com/apkognition/APKognito/issues" />
+                    <ui:Anchor
+                        Margin="0,0,0,8"
+                        Background="MediumPurple"
+                        Content="Discord server"
+                        Foreground="White"
+                        Icon="{ui:SymbolIcon Symbol=Chat24}"
+                        NavigateUri="https://discord.gg/rNR2VHySgF" />
+                </WrapPanel>
+            </StackPanel>
+        </ui:Card>
+    </StackPanel>
+</Page>

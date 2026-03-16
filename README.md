@@ -1,0 +1,100 @@
+> [!IMPORTANT]
+> APKognito is no longer being maintained. v2.2.1 will likely be the final version.
+> The apkognito.win domain will expire May 3rd. I will not renew it, and the repo will become inaccessible shortly after. I suppose that will be the official "Death Day" of the APKognito project.
+>
+> The current state of the repo is non-functional from my piss-poor attempt at simplifying the renaming startup chain. So... good luck to anyone who want's to fix that.
+>
+> Thank you to everyone who helped along the way.
+
+---
+
+<!-- Light/dark mode -->
+<p align="center">
+  <img align="center" width="50%" src="./Logos/dark-wide.png#gh-dark-mode-only">
+  <img align="center" width="50%" src="./Logos/light-wide.png#gh-light-mode-only">
+</p>
+
+<p align="center">
+  Rename Android APK files to prevent naming conflicts when debugging several apps on one device!
+</p>
+
+<p align="center">
+  <a href="https://discord.gg/rNR2VHySgF">
+    <img src="https://dcbadge.limes.pink/api/server/https://discord.gg/rNR2VHySgF?style=flat">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/apkognition/APKognito/releases/latest">
+    <img src="https://img.shields.io/github/v/release/apkognition/APKognito" alt="GitHub release badge">
+  </a>
+  <img src="https://img.shields.io/github/downloads/apkognition/APKognito/total.svg" alt="Downloads badge">
+  <img src="https://img.shields.io/github/issues/apkognition/APKognito" alt="Open Issues badge">
+  <img src="https://api.netlify.com/api/v1/badges/b75b5cb1-06cb-4d34-b378-543b3b036245/deploy-status" alt="Netlify Status"/>
+</p>
+
+<!--  Just badges for bragging ¯\_(ツ)_/¯  -->
+<p align="center">
+  <!-- Vulnerabilities -->
+  <a href="https://sonarcloud.io/summary/new_code?id=apkognition_APKognito"><img src="https://sonarcloud.io/api/project_badges/measure?project=apkognition_APKognito&amp;metric=vulnerabilities" alt="Vulnerabilities"></a>
+  <!-- Bugs -->
+  <a href="https://sonarcloud.io/summary/new_code?id=apkognition_APKognito"><img src="https://sonarcloud.io/api/project_badges/measure?project=apkognition_APKognito&amp;metric=bugs" alt="Bugs"></a>
+  <!-- Duplicated Lines -->
+  <a href="https://sonarcloud.io/summary/new_code?id=apkognition_APKognito"><img src="https://sonarcloud.io/api/project_badges/measure?project=apkognition_APKognito&amp;metric=duplicated_lines_density" alt="Duplicated Lines (%)"></a>
+  <!-- Reliability -->
+  <a href="https://sonarcloud.io/summary/new_code?id=apkognition_APKognito"><img src="https://sonarcloud.io/api/project_badges/measure?project=apkognition_APKognito&amp;metric=reliability_rating" alt="Reliability Rating"></a>
+  <!-- Security -->
+  <a href="https://sonarcloud.io/summary/new_code?id=apkognition_APKognito"><img src="https://sonarcloud.io/api/project_badges/measure?project=apkognition_APKognito&amp;metric=security_rating" alt="Security Rating"></a>
+  <!-- Maintainability -->
+  <a href="https://sonarcloud.io/summary/new_code?id=apkognition_APKognito"><img src="https://sonarcloud.io/api/project_badges/measure?project=apkognition_APKognito&amp;metric=sqale_rating" alt="Maintainability Rating"></a>
+  <!-- Lines of Code -->
+  <a href="https://sonarcloud.io/summary/new_code?id=apkognition_APKognito"><img src="https://sonarcloud.io/api/project_badges/measure?project=apkognition_APKognito&amp;metric=ncloc" alt="Lines of Code"></a>
+  <!-- Quality Gate -->
+  <a href="https://sonarcloud.io/summary/new_code?id=apkognition_APKognito"><img src="https://sonarcloud.io/api/project_badges/measure?project=apkognition_APKognito&amp;metric=alert_status" alt="Quality Gate Status"></a>
+</p>
+
+![APKognito example](./gitassets/image.png)
+
+# How to use
+
+If you're new to APKognito and don't know what you're doing, then check out the [APKognito Docs](https://apkognito.win)!
+
+# Requirements
+
+`APKognito` is precompiled for a _64 bit operating system_. If you're running 32 bit Windows 10, you need to compile `APKognito` yourself (which requires the SDK, see [build](#build) for more instructions).
+
+`APKognito` requires the .Net Core 9.0 runtime to be installed on your machine prior to use and can be found [here (.NET 9.0)](https://dotnet.microsoft.com/en-us/download/dotnet/9.0).
+
+# Basic Usage
+
+Open `APKognito` and click `Select APKs`. A File Explorer window will open for you to select one or many APK files.
+
+Once your APK files are selected, click `Start` and wait for them to be renamed. The default output path for all APKs and their OBBs is `%APPDATA%\APKognito\output`. This can be changed by accessing the "APK Settings" dropdown on the main renaming page.
+
+If you experience any issues, please submit one at [the issues page](https://github.com/apkognition/APKognito/issues/new/choose).
+
+# Build
+
+`APKognito` uses [.NET Core 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0). Ensure you have the SDK for it prior to building.
+
+If you have Visual Studio installed, you can build it with that.
+
+If you don't have Visual Studio but still have the .Net SDK, you can build it from Powershell with this command:
+
+```powershell
+$ cd "C:\path\to\APKognito"
+$ dotnet publish
+```
+
+# Contributing
+
+![Alt](https://repobeats.axiom.co/api/embed/845c6a1e7b56de71e80b4a2c5969f7206d1eec8c.svg "Repobeats analytics image")
+
+# License
+
+`APKognito` is distributed under the GPL license, meaning any forks of it must have their source code made public on the internet. See the [LICENSE](./LICENSE.txt) for details.
+
+# Notice
+
+> [!CAUTION]
+> This application is meant for Android package debugging environments and workflows only. I am not responsible for the way `APKognito` is used or where it is used.

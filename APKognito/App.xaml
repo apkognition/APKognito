@@ -1,0 +1,34 @@
+﻿<Application
+    x:Class="APKognito.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Exit="OnExitAsync"
+    Startup="OnStartup">
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
+                <ResourceDictionary Source="/Controls/Overrides/WpfUiOverrides.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <FontFamily x:Key="FiraRegular">./Fonts/FiraCode-Medium.ttf#Fira Code Medium</FontFamily>
+            <FontFamily x:Key="TechSans">./Fonts/TechSans.ttf#Watatsuki Tech Sans</FontFamily>
+
+            <!--
+            <FontFamily x:Key="FiraItalic">./Fonts/FiraCode-Italic.ttf</FontFamily>
+            <FontFamily x:Key="FiraBold">./Fonts/FiraCode-Bold.ttf</FontFamily>
+            <FontFamily x:Key="FiraLight">./Fonts/FiraCode-Light.ttf</FontFamily>
+            <FontFamily x:Key="FiraRetina">./Fonts/FiraCode-Retina.ttf</FontFamily>
+            -->
+
+            <Style TargetType="Control">
+                <Setter Property="FontFamily" Value="Segoe UI Symbol" />
+            </Style>
+
+            <ui:ImageIcon x:Key="Apkognito-Alone" Source="pack://application:,,,/Assets/apkognito.png" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

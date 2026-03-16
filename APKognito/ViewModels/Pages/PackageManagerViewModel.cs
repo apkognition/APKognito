@@ -1,0 +1,509 @@
+﻿using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows.Threading;
+using APKognito.AdbTools;
+using APKognito.ApkLib;
+using APKognito.ApkMod;
+using APKognito.Base.MVVM;
+using APKognito.Configurations;
+using APKognito.Configurations.ConfigModels;
+using APKognito.Controls;
+using APKognito.Controls.Dialogs;
+using APKognito.Controls.ViewModels;
+using APKognito.Models;
+using APKognito.Services;
+using APKognito.Utilities;
+using Newtonsoft.Json;
+
+namespace APKognito.ViewModels.Pages;
+
+public partial class PackageManagerViewModel : LoggableObservableObject
+{
+    private readonly ConfigurationFactory _configFactory;
+    private readonly AdbConfig _adbConfig;
+    private readonly IDialogDispatcher _dialogDispatcher;
+
+    private readonly List<PackageEntry> _cachedPackageList = [];
+
+    #region Properties
+
+    [ObservableProperty]
+    public partial ObservableCollection<PackageEntry> PackageList { get; set; } = [
+#if DEBUG
+        new("test","/apk.apk", 10923, null, 0, 0),
+        new("tet","/a.apk", 23874, "jsjs", 2399, -1),
+        new("test twice", "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE", 209374029374, "rueu", 23098, 023423),
+        new("test ttjasdh lkjashdlkhsadkljfhsjdfhlkjsad", "/home/user/k/something.apk", 0004334958374, "test/dddfsd", 38479828, 203984),
+        new("test tejasdh lkjashdlkfjkljalsjdfhlkjsad", "/home/userk/something.apk", 0004334958374, "test/dddfsd", 38479828, 203984),
+        new("test tesjasdh lkjashdlkfjsdljfhsjdfhlkjsad", "/home/ur/idk/something.apk", 0004334958374, "test/dddfsd", 38479828, 203984),
+        new("test tstjasdh lkjashdlkfjhadkljfhajdfhlkjsad", "/home/er/idk/something.apk", 0004334958374, "test/dddfsd", 38479828, 203984),
+#endif
+    ];
+
+    [ObservableProperty]
+    public partial bool IsRefreshing { get; set; } = false;
+
+    [ObservableProperty]
+    public partial bool EnableControls { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool EnableProgressBar { get; set; } = false;
+
+    [ObservableProperty]
+    public partial string SearchText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial int SelectedItems { get; set; } = 0;
+
+    [ObservableProperty]
+    public partial string CurrentlyPulling { get; set; } = "None";
+
+    #endregion Properties
+
+    public PackageManagerViewModel()
+    {
+        // For designer
+        _configFactory = null!;
+        _adbConfig = null!;
+    }
+
+    public PackageManagerViewModel(
+        ConfigurationFactory configFactory,
+        ISnackbarService snackService,
+        IDialogDispatcher dialogDispatcher
+    ) : base(configFactory)
+    {
+        _configFactory = configFactory;
+        _adbConfig = _configFactory.GetConfig<AdbConfig>();
+
+        _dialogDispatcher = dialogDispatcher;
+        SetSnackbarProvider(snackService);
+    }
+
+    #region Commands
+
+    [RelayCommand]
+    private async Task OnUpdatePackageListAsync()
+    {
+        try
+        {
+            await UpdatePackageListAsync();
+        }
+        catch (Exception ex)
+        {
+            SnackError($"Failed to load packages: {ex.Message}");
+            FileLogger.LogException(ex);
+        }
+    }
+
+    [RelayCommand]
+    private async Task OnUninstallPackagesAsync(ListView list)
+    {
+        try
+        {
+            await UninstallPackagesAsync(list, false);
+            await UpdatePackageListAsync();
+        }
+        catch (Exception ex)
+        {
+            FileLogger.LogException(ex);
+            SnackError("Uninstall failed!", ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private async Task OnSoftUninstallPackagesAsync(ListView list)
+    {
+        try
+        {
+            await UninstallPackagesAsync(list);
+            await UpdatePackageListAsync();
+        }
+        catch (Exception ex)
+        {
+            FileLogger.LogException(ex);
+            SnackError("Soft uninstall failed!", ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private async Task OnPullPackagesAsync(ListView list)
+    {
+        try
+        {
+            await PullPackagesAsync(list);
+        }
+        catch (Exception ex)
+        {
+            FileLogger.LogException(ex);
+            SnackError("Package pull failed!", ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private async Task OnPushPackagesAsync()
+    {
+        EnableControls = false;
+
+        try
+        {
+            MinimalPackageInfo? result = await _dialogDispatcher.For<PackagePushDialog>().ShowAsync<MinimalPackageInfo>();
+
+            if (result is null)
+            {
+                // The PackagePushDialog result getter always creates a new instance, but I might change it later and not update this
+                return;
+            }
+
+            string packagePath = result.PackagePath;
+            string? assetPath = result.AssetsPath;
+
+            SnackInfo("Installing package...", $"Installing package {Path.GetFileName(packagePath)}");
+
+            var renamer = new PackageRenamer(_configFactory, this, new Progress<ProgressInfo>());
+            await renamer.SideloadPackageAsync(new(
+                packagePath,
+                assetPath,
+                Path.GetFileNameWithoutExtension(packagePath),
+                string.Empty)
+            );
+
+            SnackSuccess("Upload success!", new LogBuilder($"Uploaded {Path.GetFileName(packagePath)} ")
+                .AppendConcatIf(assetPath is null, "and assets directory ", Path.GetFileName(assetPath))
+                .Build()
+            );
+        }
+        catch (Exception ex)
+        {
+            FileLogger.LogException(ex);
+            SnackError("Package push failed!", ex.Message);
+        }
+        finally
+        {
+            EnableControls = true;
+        }
+    }
+
+    #endregion Commands
+
+    partial void OnSearchTextChanged(string value)
+    {
+        FilterPackages(value);
+    }
+
+    private async Task UninstallPackagesAsync(ListView list, bool softUninstall = true)
+    {
+        EnableControls = false;
+
+        IEnumerable<PackageEntry> items = list.SelectedItems.Cast<PackageEntry>();
+        int selected = items.Count();
+
+        if (selected is 0)
+        {
+            SnackError("No packages selected!", "Select at least one package to uninstall.");
+            EnableControls = true;
+            return;
+        }
+
+        MessageBoxResult result = await new MessageBox()
+        {
+            Title = "Are you sure?",
+            Content = $"This will {(softUninstall
+                ? "remove the APKs and asset files, but not save data, for"
+                : "completely remove all data associated with")} the following {"package".PluralizeIfMany(selected)}:\n  ⚬  {string.Join("\n  ⚬  ", items.Select(item => item.PackageName))}\n\nContinue?",
+            PrimaryButtonText = $"{(softUninstall ? "Soft uninstall" : "Uninstall")} {selected} {"app".PluralizeIfMany(selected)}",
+            PrimaryButtonAppearance = Wpf.Ui.Controls.ControlAppearance.Danger,
+            CloseButtonText = "Cancel"
+        }.ShowDialogAsync();
+
+        if (result != MessageBoxResult.Primary)
+        {
+            EnableControls = true;
+            return;
+        }
+
+        AdbDeviceInfo? device = _adbConfig.GetCurrentDevice();
+
+        if (device is null)
+        {
+            SnackError("No device selected!", "You need to select a device before uninstalling any packages.");
+            EnableControls = true;
+            return;
+        }
+
+        try
+        {
+            await ImplementPackageRemovalAsync(items, softUninstall);
+
+            SnackSuccess($"{selected} packages removed!", $"{selected} were {(softUninstall ? "soft" : string.Empty)} uninstalled successfully!");
+        }
+        catch (Exception ex)
+        {
+            SnackError("Failed to uninstall package(s)!", ex.Message);
+            FileLogger.LogException(ex);
+        }
+
+        EnableControls = true;
+    }
+
+    public async Task UpdatePackageListAsync(bool silent = false)
+    {
+        /*
+         * Current format:
+         *  <package name>|<package path>|<package size>|<assets size>|<package save data size>
+         */
+
+        AdbDeviceInfo? device = _adbConfig.GetCurrentDevice();
+        if (device is null)
+        {
+            if (silent)
+            {
+                return;
+            }
+
+            SnackError("No device!", "No ADB device is set! Select one in from the dropdown!");
+        }
+
+        AdbCommandOutput? result = await Tools.TimeAsync(async () =>
+        {
+            try
+            {
+                return await AdbManager.InvokeScriptAsync($"{nameof(AdbScripts.GetPackageInfo)}.sh", string.Empty, true);
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogException(ex);
+                return default;
+            }
+        });
+
+        if (result is null)
+        {
+            return;
+        }
+
+        if (result.Errored)
+        {
+            if (silent)
+            {
+                return;
+            }
+
+            SnackError("Unable to get packages!", result.StdErr);
+            return;
+        }
+
+        string rawJson = result.StdOut;// Encoding.UTF8.GetString(Convert.FromBase64String(result.StdOut));
+
+        _cachedPackageList.Clear();
+        List<PackageEntry>? devices = JsonConvert.DeserializeObject<List<PackageEntry>>(rawJson);
+
+        if (devices is not null)
+        {
+            _cachedPackageList.AddRange(devices);
+        }
+
+        DisplayPackages(_cachedPackageList);
+    }
+
+    private async Task PullPackagesAsync(ListView list)
+    {
+        EnableControls = false;
+
+        AdbDeviceInfo? device = _adbConfig.GetCurrentDevice();
+        if (device is null)
+        {
+            SnackError("No device!", "No ADB device is set! Select one in from the dropdown!");
+            return;
+        }
+
+        IEnumerable<PackageEntry> items = list.SelectedItems.Cast<PackageEntry>();
+        int selected = items.Count();
+
+        if (selected is 0)
+        {
+            SnackError("No packages selected!", "Select at least one package to pull.");
+            EnableControls = true;
+            return;
+        }
+
+        DirectoryConfirmationViewModel dialogOutput = new()
+        {
+            Title = "Directory Confirmation",
+            Content = $"This will pull the following {"package".PluralizeIfMany(selected)}:\n  ⚬  {string.Join("\n  ⚬  ", items.Select(item => item.PackageName))}\n\nContinue?",
+        };
+
+        DirectoryConfirmationDialog directoryDialog = new(dialogOutput, _dialogDispatcher.GetContentDialogHost())
+        {
+            IsPrimaryButtonEnabled = true,
+            PrimaryButtonText = $"Pull {"App".PluralizeIfMany(selected)}",
+            PrimaryButtonAppearance = WPFUI::Controls.ControlAppearance.Success
+        };
+
+        WPFUI::Controls.ContentDialogResult result = await directoryDialog.ShowAsync();
+
+        if (result is WPFUI::Controls.ContentDialogResult.Primary)
+        {
+            EnableControls = true;
+            return;
+        }
+
+        string outputDirectory = dialogOutput.OutputDirectory;
+        _configFactory.SaveConfig<UserRenameConfiguration>();
+
+        foreach (PackageEntry package in items)
+        {
+            CurrentlyPulling = package.PackageName;
+            string outputPackagePath = Path.Combine(outputDirectory, package.PackageName);
+
+            if (Directory.Exists(outputPackagePath))
+            {
+                Directory.Delete(outputPackagePath, true);
+            }
+
+            _ = Directory.CreateDirectory(outputPackagePath);
+
+            _ = await AdbManager.QuickDeviceCommandAsync($"pull \"{package.PackagePath}\" \"{Path.Combine(outputPackagePath, $"{package.PackageName}.apk")}\"");
+
+            if (package.AssetPath is null)
+            {
+                continue;
+            }
+
+            CurrentlyPulling = Path.GetFileName(package.AssetPath);
+            string outputAssetPath = Path.Combine(outputPackagePath, package.PackageName);
+            _ = Directory.CreateDirectory(outputAssetPath);
+            _ = await AdbManager.QuickDeviceCommandAsync($"pull \"{AdbManager.ANDROID_OBB}\" \"{outputAssetPath}\"");
+        }
+
+        CurrentlyPulling = "None";
+        EnableControls = true;
+    }
+
+    private void FilterPackages(string filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            DisplayPackages(_cachedPackageList);
+            return;
+        }
+
+        string[] filterParts = filter.Split();
+
+        List<PackageEntry> matchingPackages = [.. _cachedPackageList.Where(package =>
+        {
+            string packageName = package.PackageName;
+            return filterParts.Any(p => packageName.Contains(p));
+        })];
+
+        DisplayPackages(matchingPackages);
+    }
+
+    private void DisplayPackages(List<PackageEntry> packageEntries)
+    {
+        Dispatcher.CurrentDispatcher.Invoke(() =>
+        {
+            PackageList.Clear();
+
+            foreach (PackageEntry package in packageEntries)
+            {
+                PackageList.Add(package);
+            }
+        });
+    }
+
+    private async Task ImplementPackageRemovalAsync(IEnumerable<PackageEntry> items, bool softUninstall)
+    {
+        string command = $"shell pm uninstall {(softUninstall ? "-k" : string.Empty)}";
+        (string, bool)[] packages = [.. items.Select(p => (p.PackageName, p.AssetPath is not null))];
+
+        foreach ((string, bool) packagePair in packages)
+        {
+            string packageName = packagePair.Item1;
+            string assetPath = $"{AdbManager.ANDROID_OBB}/{packageName}";
+
+            if (string.IsNullOrWhiteSpace(packageName))
+            {
+                SnackError("Empty package name!", "An entry containing an empty package name was found. This package will not be uninstalled to prevent unintended data loss.");
+                return;
+            }
+
+            FileLogger.Log($"Uninstalling package: {packageName} (soft = {softUninstall})");
+
+            // Remove package
+            _ = await AdbManager.QuickDeviceCommandAsync($"{command} {packageName}");
+
+            if (packagePair.Item2)
+            {
+                // Assets
+                _ = await AdbManager.QuickDeviceCommandAsync($"shell rm -r \"{assetPath}\"");
+            }
+
+            if (!softUninstall)
+            {
+                // Save data
+                _ = await AdbManager.QuickDeviceCommandAsync($"shell rm -r \"{AdbManager.ANDROID_DATA}/{packageName}\"", noThrow: true);
+            }
+
+            int itemInd = 0;
+            for (; itemInd < PackageList.Count; ++itemInd)
+            {
+                if (PackageList[itemInd].PackageName == packageName)
+                {
+                    break;
+                }
+            }
+
+            if (itemInd > PackageList.Count)
+            {
+                throw new InvalidOperationException($"Failed to find package `{packageName}` in list.");
+            }
+
+            PackageList.RemoveAt(itemInd);
+        }
+    }
+
+    private string? PromptForPackage()
+    {
+        OpenFileDialog openFileDialog = new()
+        {
+            Filter = "APK files (*.apk)|*.apk",
+            Title = "Select Android Package"
+        };
+
+        bool? result = openFileDialog.ShowDialog();
+
+        if (result is null)
+        {
+            Log("Failed to get file. Please try again.");
+            return null;
+        }
+
+        if ((bool)result)
+        {
+            return openFileDialog.FileName;
+        }
+        else
+        {
+            Log("Did you forget to select a file from the File Explorer window?");
+        }
+
+        return null;
+    }
+
+    private static RenamedPackageMetadata? GetPackageMetadata(string packagePath)
+    {
+        string? packageDirectory = Path.GetDirectoryName(packagePath);
+
+        if (packageDirectory is null)
+        {
+            return null;
+        }
+
+        string? claimFile = DirectoryManager.GetClaimFile(packageDirectory);
+
+        return claimFile is not null
+            ? MetadataManager.LoadMetadata(claimFile)
+            : null;
+    }
+}

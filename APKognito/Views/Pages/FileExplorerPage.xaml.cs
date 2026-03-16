@@ -1,0 +1,78 @@
+﻿using APKognito.Models;
+using APKognito.Base.MVVM;
+using APKognito.ViewModels.Pages;
+using Wpf.Ui.Abstractions.Controls;
+using ListViewItem = Wpf.Ui.Controls.ListViewItem;
+
+namespace APKognito.Views.Pages;
+
+/// <summary>
+/// Interaction logic for FileExplorerPage.xaml
+/// </summary>
+public partial class FileExplorerPage : INavigableView<FileExplorerViewModel>, IViewable
+{
+    public FileExplorerViewModel ViewModel { get; }
+
+    public FileExplorerPage(FileExplorerViewModel viewModel)
+    {
+        InitializeComponent();
+        DataContext = this;
+        ViewModel = viewModel;
+
+        Loaded += async (sender, e) =>
+        {
+            await viewModel.NavigateToDirectoryCommand.ExecuteAsync(AdbFileEntry.RootFolder);
+        };
+    }
+
+#if DEBUG
+    public FileExplorerPage()
+    {
+        DataContext = this;
+        ViewModel = new();
+        // For designer
+    }
+#endif
+
+    private async void ListViewItem_MouseDoubleClickAsync(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left)
+        {
+            return;
+        }
+
+        AdbFileEntry info;
+
+        if (sender is not ListViewItem item)
+        {
+            return;
+        }
+
+        info = (AdbFileEntry)item.Content;
+        if (info.ItemType is not (AdbFolderType.Directory or AdbFolderType.SymbolicLink))
+        {
+            return;
+        }
+
+        await ViewModel.NavigateToDirectoryCommand.ExecuteAsync(info);
+    }
+
+    private async void This_PreviewMouseUpAsync(object sender, MouseButtonEventArgs e)
+    {
+        switch (e.ChangedButton)
+        {
+            case MouseButton.XButton1:
+                await ViewModel.NavigateBackwardsCommand.ExecuteAsync(null);
+                break;
+
+            case MouseButton.XButton2:
+                await ViewModel.NavigateForwardsCommand.ExecuteAsync(null);
+                break;
+
+            default:
+                return;
+        }
+
+        e.Handled = true;
+    }
+}
